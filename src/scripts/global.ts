@@ -1,3 +1,8 @@
+import { initializeBoard } from '@/scripts/main'
+
+import type { Board } from '@/scripts/main'
+import type { MousePosition } from '@/scripts/types'
+
 export const rawTasks = [
   'ANY CHANGES YOU MAKE TO YOUR TO-DO LIST WILL BE SAVED AUTOMATICALLY',
   'PRESS ANY KEY OR CLICK ANYWHERE IN THE WINDOW TO ENABLE SOUND',
@@ -7,10 +12,21 @@ export const rawTasks = [
   'TO DELETE A TASK, ENABLE EDITING BY TYPING ANY CHARACTER, THEN CLEAR THE TASK USING THE BACKSPACE KEY, THEN PRESS ENTER',
 ]
 
-export function storageAvailable(type: string): boolean {
-  let storage: Storage | undefined
+export function prependNumsToTasks(rawTasks: string[]): string[] {
+  return rawTasks.map((task: string, i: number) => {
+    let taskNum
+    if (i + 1 > 9) {
+      taskNum = `${i + 1}`
+    } else {
+      taskNum = `0${i + 1}`
+    }
+    return `${taskNum}${task}`
+  })
+}
+
+function storageAvailable(storageType: string): boolean {
   try {
-    storage = (window as unknown as Record<string, Storage>)[type]
+    const storage = window[storageType as keyof Window] as Storage
     const x = '__storage_test__'
     storage.setItem(x, x)
     storage.removeItem(x)
@@ -18,9 +34,150 @@ export function storageAvailable(type: string): boolean {
   } catch (e) {
     return (
       e instanceof DOMException &&
-      e.name === 'QuotaExceededError' &&
-      storage !== undefined &&
-      storage.length !== 0
+      (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
+      (window[storageType as keyof Window] as Storage)?.length !== 0
     )
   }
+}
+
+export function calculateAdditionalRows(
+  cols: number,
+  defaultRows: number,
+  tasks: string[],
+): number {
+  const lineBreakFromDate = cols >= 29 ? 2 : 3
+  const defaultTaskRows = defaultRows - lineBreakFromDate
+  let totalTaskRows = 0
+
+  tasks.forEach((task: string) => {
+    if (task.length <= cols) {
+      totalTaskRows += 1
+    }
+
+    if (task.length > cols) {
+      const initialIndentedRows = Math.ceil(task.length / cols) - 1
+      const initialLength = task.length + 2 * initialIndentedRows
+      const totalIndentedRows = Math.ceil(initialLength / cols) - 1
+      const diff = totalIndentedRows - initialIndentedRows
+      const totalLength = initialLength + 2 * diff
+      const totalRowsRequired = Math.ceil(totalLength / cols)
+      totalTaskRows += totalRowsRequired
+    }
+  })
+
+  const additionalRows = totalTaskRows - defaultTaskRows
+  if (additionalRows > 0) {
+    return additionalRows
+  } else {
+    return 0
+  }
+}
+
+export function initializeTasks(rawTasks: string[]): string[] {
+  if (storageAvailable('localStorage')) {
+    if (!localStorage.getItem('visited')) {
+      localStorage.setItem('visited', 'true')
+    } else if (localStorage.getItem('tasks')) {
+      const savedTasks = localStorage.getItem('tasks')
+      if (savedTasks) {
+        rawTasks.length = 0
+        rawTasks.push(...JSON.parse(savedTasks))
+      }
+    }
+  } else {
+    alert(
+      'Local storage is not available, when closing the current window your changes will not be saved',
+    )
+  }
+  return prependNumsToTasks(rawTasks)
+}
+
+export function handleWindowResize(
+  resizeTimeout: NodeJS.Timeout | undefined,
+  isSupportedBrowser: boolean,
+): void {
+  clearTimeout(resizeTimeout)
+  resizeTimeout = setTimeout(() => {
+    if (isSupportedBrowser) {
+      initializeBoard()
+    }
+  }, 500) as NodeJS.Timeout
+}
+
+export function handleClick(
+  e: MouseEvent,
+  boardAnimation: number | undefined,
+  board: Board,
+  mouse: MousePosition,
+): void {
+  if (boardAnimation || !board) return
+  mouse.x = e.clientX + window.scrollX
+  mouse.y = e.clientY + window.scrollY
+  board.selectFlapOnClick(mouse.x, mouse.y)
+}
+
+export function handleMouseMove(
+  e: MouseEvent,
+  boardAnimation: number | undefined,
+  board: Board,
+  mouseMoveThrottleTimeout: NodeJS.Timeout | undefined,
+  mouse: MousePosition,
+): void {
+  if (boardAnimation || !board) return
+  if (!mouseMoveThrottleTimeout) {
+    mouse.x = e.clientX + window.scrollX
+    mouse.y = e.clientY + window.scrollY
+    board.selectFlapOnMouseMove(mouse.x, mouse.y)
+    mouseMoveThrottleTimeout = setTimeout(() => {
+      mouseMoveThrottleTimeout = undefined
+    }, 100) as NodeJS.Timeout
+  }
+}
+
+export function handleKeyDown(
+  e: KeyboardEvent,
+  boardAnimation: number | undefined,
+  board: Board,
+  chars: Set<unknown>,
+): void {
+  if (boardAnimation || !board) return
+  if (
+    e.key === ' ' ||
+    e.key === 'Delete' ||
+    e.key === 'ArrowLeft' ||
+    e.key === 'ArrowRight' ||
+    e.key === 'ArrowDown' ||
+    e.key === 'ArrowUp'
+  ) {
+    e.preventDefault()
+  }
+  if (
+    e.key === 'Backspace' ||
+    e.key === 'Delete' ||
+    e.key === 'Enter' ||
+    e.key === 'ArrowLeft' ||
+    e.key === 'ArrowRight' ||
+    e.key === 'ArrowDown' ||
+    e.key === 'ArrowUp' ||
+    e.key === 'Escape'
+  ) {
+    board.navigateWithKeys(e.key)
+    return
+  }
+  const key = e.key.toUpperCase()
+  if (chars.has(key)) {
+    board.typeChar(key)
+  }
+}
+
+export function unlockAudio(sound: HTMLAudioElement, board: Board): void {
+  sound
+    .play()
+    .then(() => {
+      board.sound.pause()
+      board.sound.currentTime = 0
+      sound.muted = false
+      board.sound.muted = false
+    })
+    .catch((_e) => console.log('User interaction required for sound.'))
 }

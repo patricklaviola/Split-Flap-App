@@ -1,6 +1,18 @@
 import '@/styles/style.css'
 
-// Global variable type declarations
+import {
+  calculateAdditionalRows,
+  handleClick,
+  handleKeyDown,
+  // handleDoubleClick,
+  handleMouseMove,
+  handleWindowResize,
+  initializeTasks,
+  prependNumsToTasks,
+  rawTasks,
+  unlockAudio,
+} from '@/scripts/global'
+
 let canvas: HTMLCanvasElement
 let ctx: CanvasRenderingContext2D
 let board: Board
@@ -34,14 +46,6 @@ for (const char of charString) {
   chars.add(char)
 }
 
-const rawTasks = [
-  'ANY CHANGES YOU MAKE TO YOUR TO-DO LIST WILL BE SAVED AUTOMATICALLY',
-  'PRESS ANY KEY OR CLICK ANYWHERE IN THE WINDOW TO ENABLE SOUND',
-  'PRESS ENTER TO MOVE TO THE NEXT TASK OR TO WRITE A NEW TASK',
-  'START TYPING IN A TASK ROW TO ENABLE EDITING',
-  "WHEN YOU'RE DONE TYPING THE TASK, PRESS ENTER TO SUBMIT AND SEE THE BOARD REFRESH",
-  'TO DELETE A TASK, ENABLE EDITING BY TYPING ANY CHARACTER, THEN CLEAR THE TASK USING THE BACKSPACE KEY, THEN PRESS ENTER',
-]
 let tasks: string[] = []
 
 interface MousePosition {
@@ -177,7 +181,7 @@ class Flap {
   }
 }
 
-class Board {
+export class Board {
   ctx: CanvasRenderingContext2D
   canvasWidth: number
   canvasHeight: number
@@ -413,7 +417,7 @@ class Board {
 
     localStorage.setItem('tasks', JSON.stringify(rawTasks))
 
-    prependNumsToTasks()
+    tasks = prependNumsToTasks(rawTasks)
   }
 
   typeChar(char: string): void {
@@ -481,7 +485,7 @@ class Board {
 
     if (key === 'Enter' && this.hasStartedEditing) {
       this.updateTasks()
-      initializeCanvas()
+      initializeBoard()
     }
 
     if (
@@ -793,97 +797,15 @@ class Board {
   }
 }
 
-function prependNumsToTasks(): void {
-  tasks = rawTasks.map((task: string, i: number) => {
-    let taskNum
-    if (i + 1 > 9) {
-      taskNum = `${i + 1}`
-    } else {
-      taskNum = `0${i + 1}`
-    }
-    return `${taskNum}${task}`
-  })
-}
-
-function storageAvailable(type: string): boolean {
-  let storage: Storage | undefined
-  try {
-    storage = (window as unknown as Record<string, Storage>)[type]
-    const x = '__storage_test__'
-    storage.setItem(x, x)
-    storage.removeItem(x)
-    return true
-  } catch (e) {
-    return (
-      e instanceof DOMException &&
-      e.name === 'QuotaExceededError' &&
-      storage !== undefined &&
-      storage.length !== 0
-    )
-  }
-}
-
-function calculateAdditionalRows(cols: number, defaultRows: number): number {
-  const lineBreakFromDate = cols >= 29 ? 2 : 3
-  const defaultTaskRows = defaultRows - lineBreakFromDate
-  let totalTaskRows = 0
-
-  tasks.forEach((task: string) => {
-    if (task.length <= cols) {
-      totalTaskRows += 1
-    }
-
-    if (task.length > cols) {
-      const initialIndentedRows = Math.ceil(task.length / cols) - 1
-      const initialLength = task.length + 2 * initialIndentedRows
-      const totalIndentedRows = Math.ceil(initialLength / cols) - 1
-      const diff = totalIndentedRows - initialIndentedRows
-      const totalLength = initialLength + 2 * diff
-      const totalRowsRequired = Math.ceil(totalLength / cols)
-      totalTaskRows += totalRowsRequired
-    }
-  })
-
-  const additionalRows = totalTaskRows - defaultTaskRows
-  if (additionalRows > 0) {
-    return additionalRows
-  } else {
-    return 0
-  }
-}
-
-function initializeTasks(): void {
-  if (storageAvailable('localStorage')) {
-    if (!localStorage.getItem('visited')) {
-      localStorage.setItem('visited', 'true')
-    } else if (localStorage.getItem('tasks')) {
-      const savedTasks = localStorage.getItem('tasks')
-      if (savedTasks) {
-        rawTasks.length = 0
-        rawTasks.push(...JSON.parse(savedTasks))
-      }
-    }
-  } else {
-    alert(
-      'Local storage is not available, when closing the current window your changes will not be saved',
-    )
-  }
-  prependNumsToTasks()
-}
-
-function initializeCanvas(): void {
-  // const dpr = window.devicePixelRatio || 1;
-  // canvas.width = window.innerWidth * dpr;
+export function initializeBoard(): void {
   canvas.width = window.innerWidth
   const columns = Math.floor(canvas.width / desiredCellWidth)
   const cellWidth = canvas.width / columns
   const desiredCellHeight = cellWidth * 1.4
   const defaultRows = Math.floor(window.innerHeight / desiredCellHeight)
   const cellHeight = window.innerHeight / defaultRows
-  const totalRows = defaultRows + calculateAdditionalRows(columns, defaultRows) + 3
+  const totalRows = defaultRows + calculateAdditionalRows(columns, defaultRows, tasks) + 3
   canvas.height = totalRows * cellHeight
-  // canvas.height = totalRows * cellHeight * dpr;
-  // ctx.scale(dpr, dpr);
 
   const interval = 1000 / framesPerSecond
 
@@ -915,7 +837,7 @@ function initializeCanvas(): void {
   )
 }
 
-function handleOnLoad(): void {
+export function handleOnLoad(): void {
   if (!isSupportedBrowser) {
     alert(
       'Unsupported browser. Board initialization skipped. Supported browsers: Chrome (including Brave) and Opera.',
@@ -930,103 +852,35 @@ function handleOnLoad(): void {
   }
   canvas = canvasElement
   ctx = context
-  initializeTasks()
-  initializeCanvas()
+  tasks = initializeTasks(rawTasks)
+  initializeBoard()
 }
-
-function handleWindowResize(): void {
-  clearTimeout(resizeTimeout)
-  resizeTimeout = setTimeout(() => {
-    if (isSupportedBrowser) {
-      initializeCanvas()
-    }
-  }, 100) as NodeJS.Timeout
-}
-
-function handleClick(e: MouseEvent): void {
-  if (boardAnimation || !board) return
-  mouse.x = e.clientX + window.scrollX
-  mouse.y = e.clientY + window.scrollY
-  board.selectFlapOnClick(mouse.x, mouse.y)
-}
-
-function handleMouseMove(e: MouseEvent): void {
-  if (boardAnimation || !board) return
-  if (!mouseMoveThrottleTimeout) {
-    mouse.x = e.clientX + window.scrollX
-    mouse.y = e.clientY + window.scrollY
-    board.selectFlapOnMouseMove(mouse.x, mouse.y)
-    mouseMoveThrottleTimeout = setTimeout(() => {
-      mouseMoveThrottleTimeout = undefined
-    }, 100) as NodeJS.Timeout
-  }
-}
-
-function handleDoubleClick(_e: MouseEvent): void {
-  if (boardAnimation || !board) return
-  alert('DOUBLE CLICK')
-}
-
-function handleKeyDown(e: KeyboardEvent): void {
-  if (boardAnimation || !board) return
-  if (
-    e.key === ' ' ||
-    e.key === 'Delete' ||
-    e.key === 'ArrowLeft' ||
-    e.key === 'ArrowRight' ||
-    e.key === 'ArrowDown' ||
-    e.key === 'ArrowUp'
-  ) {
-    e.preventDefault()
-  }
-  if (
-    e.key === 'Backspace' ||
-    e.key === 'Delete' ||
-    e.key === 'Enter' ||
-    e.key === 'ArrowLeft' ||
-    e.key === 'ArrowRight' ||
-    e.key === 'ArrowDown' ||
-    e.key === 'ArrowUp' ||
-    e.key === 'Escape'
-  ) {
-    board.navigateWithKeys(e.key)
-    return
-  }
-  const key = e.key.toUpperCase()
-  if (chars.has(key)) {
-    board.typeChar(key)
-  }
-}
-
-function unlockAudio(): void {
-  sound
-    .play()
-    .then(() => {
-      board.sound.pause()
-      board.sound.currentTime = 0
-      sound.muted = false
-      board.sound.muted = false
-    })
-    .catch((_e) => console.log('User interaction required for sound.'))
-}
-
-const controller = new AbortController()
 
 window.addEventListener('load', handleOnLoad)
-window.addEventListener('resize', handleWindowResize, {
-  signal: controller.signal,
+window.addEventListener('resize', () => {
+  handleWindowResize(resizeTimeout, isSupportedBrowser)
 })
-window.addEventListener('click', handleClick, { signal: controller.signal })
-window.addEventListener('dblclick', handleDoubleClick, {
-  signal: controller.signal,
+window.addEventListener('click', (e) => {
+  handleClick(e, boardAnimation, board, mouse)
 })
-window.addEventListener('keydown', handleKeyDown, {
-  signal: controller.signal,
-})
-window.addEventListener('mousemove', handleMouseMove, {
-  signal: controller.signal,
-})
-window.addEventListener('click', unlockAudio, { once: true })
-window.addEventListener('touchstart', unlockAudio, { once: true })
 
-//controller.abort();
+window.addEventListener('keydown', (e) => {
+  handleKeyDown(e, boardAnimation, board, chars)
+})
+window.addEventListener('mousemove', (e) => {
+  handleMouseMove(e, boardAnimation, board, mouseMoveThrottleTimeout, mouse)
+})
+window.addEventListener(
+  'click',
+  () => {
+    unlockAudio(sound, board)
+  },
+  { once: true },
+)
+window.addEventListener(
+  'touchstart',
+  () => {
+    unlockAudio(sound, board)
+  },
+  { once: true },
+)
