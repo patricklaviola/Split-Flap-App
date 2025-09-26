@@ -194,7 +194,6 @@ export default class Board {
         mouseY > flap.cellY &&
         mouseY < flap.cellY + flap.cellHeight
       ) {
-        console.log(flap)
         if (this.editedTask !== null && flap.task !== this.editedTask) return
 
         if (flap.index === this.clickedFlapIndex) {
@@ -529,7 +528,6 @@ export default class Board {
       }
       this.singlyAnimatedFlapsToDelete.clear()
       this.timer = 0
-      // console.log("animating flaps");
     } else {
       this.timer += deltaTime
     }

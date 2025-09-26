@@ -126,14 +126,14 @@ window.addEventListener('mousemove', (e) => {
 window.addEventListener(
   'click',
   () => {
-    unlockAudio(sound, board)
+    unlockAudio(sound)
   },
   { once: true },
 )
 window.addEventListener(
   'touchstart',
   () => {
-    unlockAudio(sound, board)
+    unlockAudio(sound)
   },
   { once: true },
 )

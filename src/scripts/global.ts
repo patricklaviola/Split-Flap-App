@@ -166,14 +166,14 @@ export function handleKeyDown(e: KeyboardEvent, board: Board, chars: Set<unknown
   }
 }
 
-export function unlockAudio(sound: HTMLAudioElement, board: Board): void {
+export function unlockAudio(sound: HTMLAudioElement): void {
   sound
     .play()
     .then(() => {
-      board.sound.pause()
-      board.sound.currentTime = 0
+      sound.pause()
+      sound.currentTime = 0
       sound.muted = false
-      board.sound.muted = false
+      console.log('UNLOCKED AUDIO')
     })
-    .catch((_e) => console.log('User interaction required for sound.'))
+    .catch(() => console.log('User interaction required for sound.'))
 }
