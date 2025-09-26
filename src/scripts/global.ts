@@ -87,21 +87,19 @@ export function calculateAdditionalRows(
 }
 
 export function initializeTasks(rawTasks: string[]): string[] {
-  if (storageAvailable('localStorage')) {
-    if (!localStorage.getItem('visited')) {
-      localStorage.setItem('visited', 'true')
-    } else if (localStorage.getItem('tasks')) {
-      const savedTasks = localStorage.getItem('tasks')
-      if (savedTasks) {
-        rawTasks.length = 0
-        rawTasks.push(...JSON.parse(savedTasks))
-      }
-    }
-  } else {
+  if (!storageAvailable('localStorage')) {
     alert(
       'Local storage is not available, when closing the current window your changes will not be saved',
     )
+    return prependNumsToTasks(rawTasks)
   }
+
+  const savedTasks = localStorage.getItem('tasks')
+  if (savedTasks) {
+    rawTasks.length = 0
+    rawTasks.push(...JSON.parse(savedTasks))
+  }
+
   return prependNumsToTasks(rawTasks)
 }
 

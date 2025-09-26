@@ -17,32 +17,27 @@ import type { MousePosition } from '@/scripts/types'
 
 const isTouchDevice = window.matchMedia('(pointer: coarse) or (hover: none)').matches
 const mql = window.matchMedia('(orientation: landscape)')
+const audioManager = new AudioManager()
+audioManager.load('mechanical-plastic-click.wav')
+const desiredCellWidth = 35 // 20-200 min-max
+const framesPerSecond = 60
+const charString = `!@#$%^&*()_-+={}[]:;'"<>,.?/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ `
+const chars = new Set()
+for (const char of charString) {
+  chars.add(char)
+}
+const rawTasks: string[] = []
+let prependedTasks: string[] = []
+const mouse: MousePosition = {
+  x: null,
+  y: null,
+}
 
 let canvas: HTMLCanvasElement
 let ctx: CanvasRenderingContext2D
 export let board: Board
 let resizeTimeout: NodeJS.Timeout | undefined
 let mouseMoveThrottleTimeout: NodeJS.Timeout | undefined
-
-const desiredCellWidth = 35 // 20-200 min-max
-const framesPerSecond = 60
-
-const audioManager = new AudioManager()
-audioManager.load('mechanical-plastic-click.wav')
-
-const charString = `!@#$%^&*()_-+={}[]:;'"<>,.?/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ `
-const chars = new Set()
-for (const char of charString) {
-  chars.add(char)
-}
-
-const rawTasks: string[] = []
-let prependedTasks: string[] = []
-
-const mouse: MousePosition = {
-  x: null,
-  y: null,
-}
 
 export function createNewBoard(): Board {
   canvas.width = window.innerWidth
@@ -91,10 +86,6 @@ function handleOnLoad(): void {
       ${instructions.map((item) => `<li>${item}</li>`).join('')}
     </ul>
   `
-
-  // if (!localStorage.getItem('visited')) {
-  //   modal.classList.remove('hidden')
-  // }
 
   closeBtn.onclick = () => {
     modal.classList.add('hidden')

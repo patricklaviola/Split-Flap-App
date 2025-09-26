@@ -8,8 +8,8 @@ body {
   background-color: rgb(0, 0, 0);
   font-family: 'Courier New', monospace;
   overflow: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 html::-webkit-scrollbar,
