@@ -94,16 +94,20 @@ export function initializeTasks(rawTasks: string[]): string[] {
 
 export function handleWindowResize(
   resizeTimeout: NodeJS.Timeout | undefined,
-  isSupportedBrowser: boolean,
+  // isSupportedBrowser: boolean,
 ): void {
   clearTimeout(resizeTimeout)
   resizeTimeout = setTimeout(() => {
-    if (isSupportedBrowser) {
-      board?.stopBoardAnimation()
-      board?.stopFlapAnimation()
-      board?.stopClockInterval()
-      setBoard(createNewBoard())
-    }
+    board?.stopBoardAnimation()
+    board?.stopFlapAnimation()
+    board?.stopClockInterval()
+    setBoard(createNewBoard())
+    // if (isSupportedBrowser) {
+    //   board?.stopBoardAnimation()
+    //   board?.stopFlapAnimation()
+    //   board?.stopClockInterval()
+    //   setBoard(createNewBoard())
+    // }
   }, 500) as NodeJS.Timeout
 }
 

@@ -20,10 +20,10 @@ export let board: Board
 let resizeTimeout: NodeJS.Timeout | undefined
 let mouseMoveThrottleTimeout: NodeJS.Timeout | undefined
 
-const ua = navigator.userAgent
-const isChrome = ua.includes('Chrome') && !ua.includes('Edg') && !ua.includes('OPR')
-const isOpera = ua.includes('OPR') || ua.includes('Opera')
-const isSupportedBrowser = isChrome || isOpera
+// const ua = navigator.userAgent
+// const isChrome = ua.includes('Chrome') && !ua.includes('Edg') && !ua.includes('OPR')
+// const isOpera = ua.includes('OPR') || ua.includes('Opera')
+// const isSupportedBrowser = isChrome || isOpera
 
 const desiredCellWidth = 35 // 20-200 min-max
 const framesPerSecond = 60
@@ -80,12 +80,12 @@ export function createNewBoard(): Board {
 }
 
 export function handleOnLoad(): void {
-  if (!isSupportedBrowser) {
-    alert(
-      'Unsupported browser. Board initialization skipped. Supported browsers: Chrome (including Brave) and Opera.',
-    )
-    return
-  }
+  // if (!isSupportedBrowser) {
+  //   alert(
+  //     'Unsupported browser. Board initialization skipped. Supported browsers: Chrome (including Brave) and Opera.',
+  //   )
+  //   return
+  // }
   const canvasElement = document.getElementById('myCanvas') as HTMLCanvasElement
   const context = canvasElement.getContext('2d')
   if (!canvasElement || !context) {
@@ -110,7 +110,8 @@ export function setBoard(newBoard: Board) {
 
 window.addEventListener('load', handleOnLoad)
 window.addEventListener('resize', () => {
-  handleWindowResize(resizeTimeout, isSupportedBrowser)
+  handleWindowResize(resizeTimeout)
+  // handleWindowResize(resizeTimeout, isSupportedBrowser)
 })
 window.addEventListener('click', (e) => {
   handleClick(e, board, mouse)
