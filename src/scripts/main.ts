@@ -4,15 +4,21 @@ import AudioManager from '@/scripts/classes/AudioManager'
 import Board from '@/scripts/classes/Board'
 import {
   calculateAdditionalRows,
+  desktopRawTasks,
   handleClick,
   handleKeyDown,
   handleMouseMove,
   handleWindowResize,
   initializeTasks,
-  rawTasks,
+  touchDeviceRawTasks,
 } from '@/scripts/global'
 
 import type { MousePosition } from '@/scripts/types'
+
+const isTouchDevice = window.matchMedia('(pointer: coarse) or (hover: none)').matches
+const mql = window.matchMedia('(orientation: landscape)')
+
+const rawTasks = isTouchDevice ? touchDeviceRawTasks : desktopRawTasks
 
 let canvas: HTMLCanvasElement
 let ctx: CanvasRenderingContext2D
@@ -99,35 +105,70 @@ export function setBoard(newBoard: Board) {
 }
 
 window.addEventListener('load', handleOnLoad)
-window.addEventListener('resize', () => {
-  handleWindowResize(resizeTimeout)
-})
-window.addEventListener('click', (e) => {
-  handleClick(e, board, mouse)
-})
 
-window.addEventListener('keydown', (e) => {
-  handleKeyDown(e, board, chars)
-})
-window.addEventListener('mousemove', (e) => {
-  handleMouseMove(e, board, mouseMoveThrottleTimeout, mouse)
-})
+if (!isTouchDevice) {
+  window.addEventListener(
+    'click',
+    () => {
+      audioManager.unlock()
+    },
+    { once: true },
+  )
+  window.addEventListener('click', (e) => {
+    handleClick(e, board, mouse)
+  })
+  window.addEventListener('keydown', (e) => {
+    handleKeyDown(e, board, chars)
+  })
+  window.addEventListener('dblclick', () => {
+    audioManager.toggleSound()
+  })
+  window.addEventListener('mousemove', (e) => {
+    handleMouseMove(e, board, mouseMoveThrottleTimeout, mouse)
+  })
+  window.addEventListener('resize', () => {
+    handleWindowResize(resizeTimeout)
+  })
+}
 
-window.addEventListener(
-  'click',
-  () => {
-    audioManager.unlock()
-  },
-  { once: true },
-)
+if (isTouchDevice) {
+  mql.addEventListener('change', () => {
+    handleWindowResize(resizeTimeout)
+  })
 
-window.addEventListener(
-  'touchstart',
-  () => {
-    audioManager.unlock()
-  },
-  { once: true },
-)
-window.addEventListener('dblclick', () => {
-  audioManager.toggleSound()
-})
+  window.addEventListener(
+    'touchstart',
+    () => {
+      audioManager.unlock()
+    },
+    { once: true },
+  )
+
+  const hiddenInput = document.createElement('input')
+  hiddenInput.type = 'text'
+  hiddenInput.style.position = 'absolute'
+  hiddenInput.style.opacity = '0'
+  hiddenInput.style.height = '0'
+  hiddenInput.style.width = '0'
+  hiddenInput.style.border = 'none'
+  hiddenInput.style.outline = 'none'
+  hiddenInput.style.position = 'fixed'
+  hiddenInput.style.top = '0'
+  hiddenInput.style.left = '0'
+  document.body.appendChild(hiddenInput)
+
+  hiddenInput.addEventListener('keydown', (e) => {
+    handleKeyDown(e, board, chars)
+  })
+
+  let lastTap = 0
+  window.addEventListener('touchend', (e) => {
+    const now = Date.now()
+    const timeSince = now - lastTap
+    if (timeSince > 0 && timeSince < 300) {
+      e.preventDefault()
+      hiddenInput.focus()
+    }
+    lastTap = now
+  })
+}

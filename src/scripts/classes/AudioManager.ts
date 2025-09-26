@@ -36,3 +36,14 @@ export default class AudioManager {
     this.enabled = !this.enabled
   }
 }
+
+// const context = new AudioContext()
+// fetch('click.mp3')
+//   .then((res) => res.arrayBuffer())
+//   .then((data) => context.decodeAudioData(data))
+//   .then((buffer) => {
+//     const source = context.createBufferSource()
+//     source.buffer = buffer
+//     source.connect(context.destination)
+//     source.start()
+//   })

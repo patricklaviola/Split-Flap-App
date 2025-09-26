@@ -3,14 +3,21 @@ import { board, createNewBoard, setBoard } from '@/scripts/main'
 import type Board from '@/scripts/classes/Board'
 import type { MousePosition } from '@/scripts/types'
 
-export const rawTasks = [
-  'CHANGES GET SAVED AUTOMATICALLY ACROSS BROWSER SESSIONS',
+export const desktopRawTasks = [
+  'YOUR CHANGES WILL BE SAVED AUTOMATICALLY EVEN IF YOU CLOSE THE BROWSER',
   'CLICK OR PRESS ANY KEY TO ENABLE SOUND',
   'DOUBLE-CLICK TO TOGGLE SOUND',
   'PRESS ENTER TO MOVE TO THE NEXT TASK OR TO WRITE A NEW TASK',
   'START TYPING IN A TASK ROW TO ENABLE EDITING',
   'AFTER TYPING, PRESS ENTER TO SUBMIT AND REFRESH THE LIST',
   'TO DELETE A TASK, START TYPING A NEW TASK, THEN BACKSPACE UNTIL THE TASK IS EMPTY, THEN PRESS ENTER',
+]
+export const touchDeviceRawTasks = [
+  'YOUR CHANGES WILL BE SAVED AUTOMATICALLY EVEN IF YOU CLOSE THE BROWSER',
+  'DOUBLE TOUCH-TAP TO ENABLE KEYBOARD',
+  'NAVIGATE TO AN EXISTING TASK BY PRESSING ENTER',
+  'NAVIGATE TO THE BOTTOM OF THE LIST (BY PRESSING ENTER) TO CREATE A NEW TASK',
+  'SUBMIT ANY CHANGES BY PRESSING ENTER',
 ]
 
 export function prependNumsToTasks(rawTasks: string[]): string[] {
@@ -166,3 +173,20 @@ export function handleKeyDown(e: KeyboardEvent, board: Board, chars: Set<unknown
     board.typeChar(key)
   }
 }
+
+// const mql = window.matchMedia("(width <= 600px)");
+// mql.addEventListener("change", screenTest);
+
+// export function isMobile(window): boolean {
+//   return window.matchMedia('(max-width: 768px)').matches
+//   matchMedia('(hover: none)')
+//   matchMedia('(pointer: coarse)')
+// }
+
+// export function screenTest(e) {
+//   if (e.matches) {
+//     para.textContent = 'This is a narrow screen — less than 600px wide.'
+//   } else {
+//     para.textContent = 'This is a wide screen — more than 600px wide.'
+//   }
+// }
