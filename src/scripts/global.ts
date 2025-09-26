@@ -4,12 +4,13 @@ import type Board from '@/scripts/classes/Board'
 import type { MousePosition } from '@/scripts/types'
 
 export const rawTasks = [
-  'ANY CHANGES YOU MAKE TO YOUR TO-DO LIST WILL BE SAVED AUTOMATICALLY',
-  'PRESS ANY KEY OR CLICK ANYWHERE IN THE WINDOW TO ENABLE SOUND',
+  'CHANGES GET SAVED AUTOMATICALLY ACROSS BROWSER SESSIONS',
+  'CLICK OR PRESS ANY KEY TO ENABLE SOUND',
+  'DOUBLE-CLICK TO TOGGLE SOUND',
   'PRESS ENTER TO MOVE TO THE NEXT TASK OR TO WRITE A NEW TASK',
   'START TYPING IN A TASK ROW TO ENABLE EDITING',
-  "WHEN YOU'RE DONE TYPING THE TASK, PRESS ENTER TO SUBMIT AND SEE THE BOARD REFRESH",
-  'TO DELETE A TASK, ENABLE EDITING BY TYPING ANY CHARACTER, THEN CLEAR THE TASK USING THE BACKSPACE KEY, THEN PRESS ENTER',
+  'AFTER TYPING, PRESS ENTER TO SUBMIT AND REFRESH THE LIST',
+  'TO DELETE A TASK, START TYPING A NEW TASK, THEN BACKSPACE UNTIL THE TASK IS EMPTY, THEN PRESS ENTER',
 ]
 
 export function prependNumsToTasks(rawTasks: string[]): string[] {
@@ -164,16 +165,4 @@ export function handleKeyDown(e: KeyboardEvent, board: Board, chars: Set<unknown
   if (chars.has(key)) {
     board.typeChar(key)
   }
-}
-
-export function unlockAudio(sound: HTMLAudioElement): void {
-  sound
-    .play()
-    .then(() => {
-      sound.pause()
-      sound.currentTime = 0
-      sound.muted = false
-      console.log('UNLOCKED AUDIO')
-    })
-    .catch(() => console.log('User interaction required for sound.'))
 }

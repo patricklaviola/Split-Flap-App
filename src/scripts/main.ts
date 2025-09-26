@@ -1,5 +1,6 @@
 import '@/styles/style.css'
 
+import AudioManager from '@/scripts/classes/AudioManager'
 import Board from '@/scripts/classes/Board'
 import {
   calculateAdditionalRows,
@@ -9,7 +10,6 @@ import {
   handleWindowResize,
   initializeTasks,
   rawTasks,
-  unlockAudio,
 } from '@/scripts/global'
 
 import type { MousePosition } from '@/scripts/types'
@@ -20,16 +20,12 @@ export let board: Board
 let resizeTimeout: NodeJS.Timeout | undefined
 let mouseMoveThrottleTimeout: NodeJS.Timeout | undefined
 
-// const ua = navigator.userAgent
-// const isChrome = ua.includes('Chrome') && !ua.includes('Edg') && !ua.includes('OPR')
-// const isOpera = ua.includes('OPR') || ua.includes('Opera')
-// const isSupportedBrowser = isChrome || isOpera
-
 const desiredCellWidth = 35 // 20-200 min-max
 const framesPerSecond = 60
-const sound = new Audio('mechanical-plastic-click.wav')
-sound.volume = 0.99
-sound.muted = false
+
+const audioManager = new AudioManager()
+audioManager.load('mechanical-plastic-click.wav')
+
 const charString = `!@#$%^&*()_-+={}[]:;'"<>,.?/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ `
 const chars = new Set()
 for (const char of charString) {
@@ -66,7 +62,7 @@ export function createNewBoard(): Board {
     cellHeight,
     interval,
     charString,
-    sound,
+    audioManager,
     prependedTasks,
     rawTasks,
   )
@@ -80,12 +76,6 @@ export function createNewBoard(): Board {
 }
 
 export function handleOnLoad(): void {
-  // if (!isSupportedBrowser) {
-  //   alert(
-  //     'Unsupported browser. Board initialization skipped. Supported browsers: Chrome (including Brave) and Opera.',
-  //   )
-  //   return
-  // }
   const canvasElement = document.getElementById('myCanvas') as HTMLCanvasElement
   const context = canvasElement.getContext('2d')
   if (!canvasElement || !context) {
@@ -111,7 +101,6 @@ export function setBoard(newBoard: Board) {
 window.addEventListener('load', handleOnLoad)
 window.addEventListener('resize', () => {
   handleWindowResize(resizeTimeout)
-  // handleWindowResize(resizeTimeout, isSupportedBrowser)
 })
 window.addEventListener('click', (e) => {
   handleClick(e, board, mouse)
@@ -123,17 +112,22 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('mousemove', (e) => {
   handleMouseMove(e, board, mouseMoveThrottleTimeout, mouse)
 })
+
 window.addEventListener(
   'click',
   () => {
-    unlockAudio(sound)
+    audioManager.unlock()
   },
   { once: true },
 )
+
 window.addEventListener(
   'touchstart',
   () => {
-    unlockAudio(sound)
+    audioManager.unlock()
   },
   { once: true },
 )
+window.addEventListener('dblclick', () => {
+  audioManager.toggleSound()
+})

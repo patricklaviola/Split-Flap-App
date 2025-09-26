@@ -1,3 +1,4 @@
+import AudioManager from '@/scripts/classes/AudioManager'
 import Flap from '@/scripts/classes/Flap'
 import { prependNumsToTasks } from '@/scripts/global'
 
@@ -11,7 +12,7 @@ export default class Board {
   cellHeight: number
   interval: number
   characters: string
-  sound: HTMLAudioElement
+  audioManager: AudioManager
   prependedTasks: string[]
   rawTasks: string[]
   clock: string
@@ -49,7 +50,7 @@ export default class Board {
     cellHeight: number,
     interval: number,
     characters: string,
-    sound: HTMLAudioElement,
+    audioManager: AudioManager,
     prependedTasks: string[],
     rawTasks: string[],
   ) {
@@ -62,14 +63,13 @@ export default class Board {
     this.cellHeight = cellHeight
     this.interval = interval
     this.characters = characters
-    this.sound = sound
+    this.audioManager = audioManager
     this.prependedTasks = prependedTasks
     this.rawTasks = rawTasks
     this.clock = this.getTime()
     this.date = this.getDate()
     this.dateOnNewLine = this.clock.length + this.date.length > this.columns
     this.tasksStartingRow = !this.dateOnNewLine ? 2 : 3
-    // this.tasksStartingFlap = this.tasksStartingRow * this.columns;
     this.flaps = []
     this.row = 0
     this.col = 0
@@ -177,8 +177,6 @@ export default class Board {
     let i = 0
     for (const digit of newTime) {
       if (digit !== this.flaps[i].targetChar) {
-        // this.sound.currentTime = 0;
-        // this.sound.play().catch(() => {});
         this.flaps[i].targetChar = digit
         this.flaps[i].draw(digit)
       }
@@ -314,7 +312,6 @@ export default class Board {
 
     if (key === 'Enter' && this.hasStartedEditing) {
       this.updateTasks()
-      // createNewBoard()
       this.onRequestNewBoard?.()
     }
 
@@ -490,21 +487,18 @@ export default class Board {
         this.singlyAnimatedFlaps.size < 2 &&
         (this.soundCount % 8 === 0 || this.soundCount === 0)
       ) {
-        this.sound.currentTime = 0
-        this.sound.play().catch(() => {})
+        this.audioManager.play()
       } else if (
         this.singlyAnimatedFlaps.size >= 2 &&
         this.singlyAnimatedFlaps.size <= 8 &&
         (this.soundCount % 4 === 0 || this.soundCount === 0)
       ) {
-        this.sound.currentTime = 0
-        this.sound.play().catch(() => {})
+        this.audioManager.play()
       } else if (
         this.singlyAnimatedFlaps.size > 8 &&
         (this.soundCount % 1 === 0 || this.soundCount === 0)
       ) {
-        this.sound.currentTime = 0
-        this.sound.play().catch(() => {})
+        this.audioManager.play()
       }
       this.soundCount++
 
@@ -618,8 +612,7 @@ export default class Board {
           }
         })
 
-        this.sound.currentTime = 0
-        this.sound.play().catch(() => {})
+        this.audioManager.play()
         this.soundCount++
         this.charCount++
         this.timer = 0
