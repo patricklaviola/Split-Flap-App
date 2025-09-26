@@ -1,6 +1,6 @@
-import { initializeBoard } from '@/scripts/main'
+import { board, createNewBoard, setBoard } from '@/scripts/main'
 
-import type { Board } from '@/scripts/main'
+import type Board from '@/scripts/classes/Board'
 import type { MousePosition } from '@/scripts/types'
 
 export const rawTasks = [
@@ -99,18 +99,16 @@ export function handleWindowResize(
   clearTimeout(resizeTimeout)
   resizeTimeout = setTimeout(() => {
     if (isSupportedBrowser) {
-      initializeBoard()
+      board?.stopBoardAnimation()
+      board?.stopFlapAnimation()
+      board?.stopClockInterval()
+      setBoard(createNewBoard())
     }
   }, 500) as NodeJS.Timeout
 }
 
-export function handleClick(
-  e: MouseEvent,
-  boardAnimation: number | undefined,
-  board: Board,
-  mouse: MousePosition,
-): void {
-  if (boardAnimation || !board) return
+export function handleClick(e: MouseEvent, board: Board, mouse: MousePosition): void {
+  if (board?.boardAnimation) return
   mouse.x = e.clientX + window.scrollX
   mouse.y = e.clientY + window.scrollY
   board.selectFlapOnClick(mouse.x, mouse.y)
@@ -118,12 +116,11 @@ export function handleClick(
 
 export function handleMouseMove(
   e: MouseEvent,
-  boardAnimation: number | undefined,
   board: Board,
   mouseMoveThrottleTimeout: NodeJS.Timeout | undefined,
   mouse: MousePosition,
 ): void {
-  if (boardAnimation || !board) return
+  if (board?.boardAnimation) return
   if (!mouseMoveThrottleTimeout) {
     mouse.x = e.clientX + window.scrollX
     mouse.y = e.clientY + window.scrollY
@@ -134,13 +131,8 @@ export function handleMouseMove(
   }
 }
 
-export function handleKeyDown(
-  e: KeyboardEvent,
-  boardAnimation: number | undefined,
-  board: Board,
-  chars: Set<unknown>,
-): void {
-  if (boardAnimation || !board) return
+export function handleKeyDown(e: KeyboardEvent, board: Board, chars: Set<unknown>): void {
+  if (board?.boardAnimation) return
   if (
     e.key === ' ' ||
     e.key === 'Delete' ||
