@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -7,18 +7,24 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    <!-- <link
-      href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap"
-      rel="stylesheet"
-    /> -->
   </head>
   <body>
     <canvas id="myCanvas">Split Flap display to-do list</canvas>
+    <!-- <div id="instructions-modal" class="modal hidden"> -->
+    <div id="instructions-modal" class="modal">
+      <div class="modal-content">
+        <h1>Welcome!</h1>
+        <h3>How to use the app:</h3>
+        <div id="instructions-list"></div>
+        <p id="storage-note">
+          <em
+            ><strong>NOTE:</strong> Your changes will be saved automatically even if you close the
+            browser</em
+          >
+        </p>
+        <button id="close-modal">Got it!</button>
+      </div>
+    </div>
     <script type="module" src="./scripts/main.ts"></script>
-    <!-- <script type="module" src="script.js"></script> -->
   </body>
 </html>

@@ -4,7 +4,7 @@ import AudioManager from '@/scripts/classes/AudioManager'
 import Board from '@/scripts/classes/Board'
 import {
   calculateAdditionalRows,
-  desktopRawTasks,
+  desktopInstructions,
   handleClick,
   handleKeyDown,
   handleMouseMove,
@@ -17,8 +17,6 @@ import type { MousePosition } from '@/scripts/types'
 
 const isTouchDevice = window.matchMedia('(pointer: coarse) or (hover: none)').matches
 const mql = window.matchMedia('(orientation: landscape)')
-
-const rawTasks = isTouchDevice ? touchDeviceRawTasks : desktopRawTasks
 
 let canvas: HTMLCanvasElement
 let ctx: CanvasRenderingContext2D
@@ -38,6 +36,7 @@ for (const char of charString) {
   chars.add(char)
 }
 
+const rawTasks: string[] = []
 let prependedTasks: string[] = []
 
 const mouse: MousePosition = {
@@ -81,7 +80,26 @@ export function createNewBoard(): Board {
   return newBoard
 }
 
-export function handleOnLoad(): void {
+function handleOnLoad(): void {
+  const modal = document.getElementById('instructions-modal') as HTMLElement
+  const closeBtn = document.getElementById('close-modal') as HTMLButtonElement
+  const instructionsContainer = document.getElementById('instructions-list') as HTMLElement
+
+  const instructions = isTouchDevice ? touchDeviceRawTasks : desktopInstructions
+  instructionsContainer.innerHTML = `
+    <ul>
+      ${instructions.map((item) => `<li>${item}</li>`).join('')}
+    </ul>
+  `
+
+  // if (!localStorage.getItem('visited')) {
+  //   modal.classList.remove('hidden')
+  // }
+
+  closeBtn.onclick = () => {
+    modal.classList.add('hidden')
+  }
+
   const canvasElement = document.getElementById('myCanvas') as HTMLCanvasElement
   const context = canvasElement.getContext('2d')
   if (!canvasElement || !context) {
@@ -146,6 +164,8 @@ if (isTouchDevice) {
 
   const hiddenInput = document.createElement('input')
   hiddenInput.type = 'text'
+  hiddenInput.id = 'hidden-input'
+  hiddenInput.name = 'hidden-input'
   hiddenInput.style.position = 'absolute'
   hiddenInput.style.opacity = '0'
   hiddenInput.style.height = '0'

@@ -3,21 +3,26 @@ import { board, createNewBoard, setBoard } from '@/scripts/main'
 import type Board from '@/scripts/classes/Board'
 import type { MousePosition } from '@/scripts/types'
 
-export const desktopRawTasks = [
-  'YOUR CHANGES WILL BE SAVED AUTOMATICALLY EVEN IF YOU CLOSE THE BROWSER',
-  'CLICK OR PRESS ANY KEY TO ENABLE SOUND',
-  'DOUBLE-CLICK TO TOGGLE SOUND',
-  'PRESS ENTER TO MOVE TO THE NEXT TASK OR TO WRITE A NEW TASK',
-  'START TYPING IN A TASK ROW TO ENABLE EDITING',
-  'AFTER TYPING, PRESS ENTER TO SUBMIT AND REFRESH THE LIST',
-  'TO DELETE A TASK, START TYPING A NEW TASK, THEN BACKSPACE UNTIL THE TASK IS EMPTY, THEN PRESS ENTER',
+export const desktopInstructions = [
+  '<strong>Enable sound:</strong> click or press any key',
+  '<strong>Toggle sound on/off:</strong> double-click',
+  "<strong>Create first task:</strong> press 'ENTER' and start typing",
+  "<strong>Save/submit a task:</strong> when done typing press 'ENTER'",
+  "<strong>Navigate across tasks:</strong> use 'ENTER', arrow keys, or left-click",
+  "<strong>Adding an additional task:</strong> press 'ENTER' until you reach the end",
+  "<strong>Edit an exiting task:</strong> start typing over a task, then press 'ENTER' when done",
+  "<strong>Delete a task:</strong> start editing the task, then 'BACKSPACE' until the task is cleared, then press 'ENTER'",
 ]
+
 export const touchDeviceRawTasks = [
-  'YOUR CHANGES WILL BE SAVED AUTOMATICALLY EVEN IF YOU CLOSE THE BROWSER',
-  'DOUBLE TOUCH-TAP TO ENABLE KEYBOARD',
-  'NAVIGATE TO AN EXISTING TASK BY PRESSING ENTER',
-  'NAVIGATE TO THE BOTTOM OF THE LIST (BY PRESSING ENTER) TO CREATE A NEW TASK',
-  'SUBMIT ANY CHANGES BY PRESSING ENTER',
+  '<strong>Enable sound:</strong> tap anywhere on the screen',
+  '<strong>Enable keyboard:</strong> double-tap anywhere on the screen',
+  "<strong>Create first task:</strong> press 'ENTER' and start typing",
+  "<strong>Save/submit a task:</strong> when done typing press 'ENTER'",
+  "<strong>Navigate across tasks:</strong> use 'ENTER'",
+  "<strong>Adding an additional task:</strong> press 'ENTER' until you reach the end",
+  "<strong>Edit an exiting task:</strong> start typing over a task, then press 'ENTER' when done",
+  "<strong>Delete a task:</strong> start editing the task, then 'BACKSPACE' until the task is cleared, then press 'ENTER'",
 ]
 
 export function prependNumsToTasks(rawTasks: string[]): string[] {
@@ -100,22 +105,13 @@ export function initializeTasks(rawTasks: string[]): string[] {
   return prependNumsToTasks(rawTasks)
 }
 
-export function handleWindowResize(
-  resizeTimeout: NodeJS.Timeout | undefined,
-  // isSupportedBrowser: boolean,
-): void {
+export function handleWindowResize(resizeTimeout: NodeJS.Timeout | undefined): void {
   clearTimeout(resizeTimeout)
   resizeTimeout = setTimeout(() => {
     board?.stopBoardAnimation()
     board?.stopFlapAnimation()
     board?.stopClockInterval()
     setBoard(createNewBoard())
-    // if (isSupportedBrowser) {
-    //   board?.stopBoardAnimation()
-    //   board?.stopFlapAnimation()
-    //   board?.stopClockInterval()
-    //   setBoard(createNewBoard())
-    // }
   }, 500) as NodeJS.Timeout
 }
 
@@ -173,20 +169,3 @@ export function handleKeyDown(e: KeyboardEvent, board: Board, chars: Set<unknown
     board.typeChar(key)
   }
 }
-
-// const mql = window.matchMedia("(width <= 600px)");
-// mql.addEventListener("change", screenTest);
-
-// export function isMobile(window): boolean {
-//   return window.matchMedia('(max-width: 768px)').matches
-//   matchMedia('(hover: none)')
-//   matchMedia('(pointer: coarse)')
-// }
-
-// export function screenTest(e) {
-//   if (e.matches) {
-//     para.textContent = 'This is a narrow screen — less than 600px wide.'
-//   } else {
-//     para.textContent = 'This is a wide screen — more than 600px wide.'
-//   }
-// }
